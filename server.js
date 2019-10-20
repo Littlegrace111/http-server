@@ -3,18 +3,33 @@ var PORT = 8000;
 var url = require('url');
 var fs = require('fs');
 var path = require('path');
-var mime = require('./mime.js');
+var mime = require('./mime');
+var expireConfig = require('./config');
 
 var server = http.createServer(function(request, response) {
+    console.log('================================');
+    // 1. 获取url域名后面的文件路径
     var pathname = url.parse(request.url).pathname;
-    console.log('pathname: ', pathname);
-    var realpath = 'assets' + pathname;
+    console.log('pathname=', pathname); 
+    // 2. 指定静态资源服务器根目录与url获取到的相对路径进行拼接
+    var realpath = 'assets' + pathname; 
+    console.log('realpath=', realpath);
+    // 3. 提取文件后缀名，解析文件类型
     var ext = path.extname(realpath); // 取文件后缀名
-    console.log('ext', ext); 
+    console.log('ext=', ext); 
     ext = ext ? ext.slice(1) : 'unknown';
+    // 4. 依据文件类型，匹配Content-Type
     var contentType = mime[ext] || 'text/plain';
-
-    console.log('realpath', realpath);
+    // 5. 匹配过期时间规则
+    console.log('expireConfig=', expireConfig);
+    if (ext.match(expireConfig.fileMatch)) {
+        var currentTime = new Date();
+        var expireTime = new Date();
+        expireTime.setTime(currentTime.getTime() + expireConfig.maxAge * 1000);
+        response.setHeader('Expires', expireTime.toUTCString()); // UTCString 返回世界时间编码格式
+        response.setHeader('Cache-Control', "max-age=" + expireConfig.maxAge);
+    }
+    
     fs.exists(realpath, function(exists) {
         if(!exists) {
             response.writeHead(404, {
