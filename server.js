@@ -29,8 +29,55 @@ var server = http.createServer(function(request, response) {
         response.setHeader('Expires', expireTime.toUTCString()); // UTCString 返回世界时间编码格式
         response.setHeader('Cache-Control', "max-age=" + expireConfig.maxAge);
     }
+
+    // 获取文件的最后修改日期
+    fs.stat(realpath, function(err, stat) {
+        var lastModified = stat.mtime.toUTCString();
+        console.log('realpath, lastModified = ' + lastModified);
+        response.setHeader('Last-Modified', lastModified);
+        console.log(request.headers['if-modified-since']);
+        if(request.headers['if-modified-since'] && lastModified === request.headers['if-modified-since']) {
+            response.writeHead(304);
+            response.end();
+        } else {
+            findStaticFile(fs, realpath, response, contentType);
+        }
+    })
     
+    // fs.exists(realpath, function(exists) {
+    //     console.log('exists: ', exists);
+    //     if(!exists) {
+    //         response.writeHead(404, {
+    //             'Content-Type': contentType
+    //         });
+    //         response.write('This request url ' + pathname + 'was not find')
+    //         response.end()
+    //     } else {
+    //         fs.readFile(realpath, 'binary', function(err, file) {
+    //             console.log('err', err);
+    //             if(err) {
+    //                 response.writeHead(500, {
+    //                     'Content-Type': contentType
+    //                 })
+    //                 response.end()
+    //             } else {
+    //                 // Content-Type : 格式要写对，如果使用text/plain 去解析图片，浏览器是乱码
+    //                 response.writeHead(200, {
+    //                     'Content-Type': contentType
+    //                 })
+    //                 response.write(file, 'binary');
+    //                 response.end()
+    //             }
+    //         })
+    //     }
+    // }) 
+    // response.write(pathname);
+    // response.end(); // 如果不加response.end() 浏览器会一直loading，因为不知道什么时候响应完成
+});
+
+function findStaticFile(fs, realpath, response, contentType) {
     fs.exists(realpath, function(exists) {
+        console.log('exists: ', exists);
         if(!exists) {
             response.writeHead(404, {
                 'Content-Type': contentType
@@ -55,10 +102,8 @@ var server = http.createServer(function(request, response) {
                 }
             })
         }
-    }) 
-    // response.write(pathname);
-    // response.end(); // 如果不加response.end() 浏览器会一直loading，因为不知道什么时候响应完成
-})
+    })
+}
 
 server.listen(PORT);
 console.log('server running at port ', PORT);
