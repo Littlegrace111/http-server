@@ -1,0 +1,29 @@
+{
+  "name": "http-server",
+  "version": "1.0.0",
+  "description": "从代码深刻了解http的协议细节",
+  "main": "config.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Littlegrace111/http-server.git"
+  },
+  "author": "Littlegrace",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Littlegrace111/http-server/issues"
+  },
+  "dependencies": {
+    "koa": "^2.4.1",
+    "koa-logger": "^3.1.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^4.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.14.11"
+  },
+  "homepage": "https://github.com/Littlegrace111/http-server#readme"
+}

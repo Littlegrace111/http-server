@@ -4,7 +4,7 @@
 // }
 
 const expires = {
-    maxAge: 60 * 60 * 24 * 365,
+    maxAge: 60 * 60,
     fileMatch: /^(gif|png|jpg|js|css)$/ig,
 }
 

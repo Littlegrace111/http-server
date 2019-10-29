@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Service Worker Demo</title>
+    </head>
+    <body>
+        <span>图片头像</span>
+        <img src="./img/react.png" alt="">
+        <hr/>
+        <span>Ajax Get 数据</span>
+        <ul id="list"></ul>
+        <script src="js/jquery_v1.js"></script>
+        <script src="js/index_v1.js"></script>
+        <script type="text/javascript">
+            $.ajax('/getList').done(function (res) {
+                res.data.forEach(item => {
+                    $('#list').append(`<li>${item}</li>`)
+                });
+            })
+            let body = document.querySelector('body');
+            let myImage = new Image();
+            imgLoad('./img/react.png').then((response) => {
+                console.log(response);
+                var imageURL = window.URL.createObjectURL(response);
+                myImage.src = imageURL;
+                body.appendChild(myImage);
+            }, (Error) => {
+                console.log(Error);
+            })
+        </script>
+        <script type="text/javascript">
+            // serviceWorker 注册
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js', {scope: './'})
+                    .then(function (reg) {
+                        console.log('register sw.js success');
+                    })
+                    .catch(function (err) {
+                        console.error('register sw.js failed');
+                    })
+            } else {
+                console.log('service worker is not work');
+            }
+        </script>
+    </body>
+</html>
