@@ -32,13 +32,17 @@
         <script type="text/javascript">
             // serviceWorker 注册
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js', {scope: './'})
-                    .then(function (reg) {
-                        console.log('register sw.js success');
-                    })
-                    .catch(function (err) {
-                        console.error('register sw.js failed');
-                    })
+                // navigator.serviceWorker.register('./sw.js', {scope: './'})
+                //     .then(function (reg) {
+                //         console.log('register sw.js success');
+                //     })
+                //     .catch(function (err) {
+                //         console.error('register sw.js failed');
+                //     })
+                window.addEventListener('load', () => {
+                    console.log('load');
+                    navigator.serviceWorker.register('./sw.js');
+                })
             } else {
                 console.log('service worker is not work');
             }

@@ -1,8 +1,16 @@
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE_NAME = 'service-worker-demo-' + VERSION;
 
 console.log('service worker begin');
 
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js');
+if(workbox) {
+    console.log(`Yay! Workbox is loaded 🎉`);
+} else {
+    console.log(`Boo! Workbox didn't load 😬`);
+}
+
+// 缓存文件
 this.addEventListener('install', function (event) {
     console.log('install sw.js success, CACHE_NAME =', CACHE_NAME);
     event.waitUntil(
@@ -14,43 +22,49 @@ this.addEventListener('install', function (event) {
                 'js/index_v1.js'
             ]);
         }).catch(function (err) {
-            console.log(err);
+            console.log('in service worker install event:', err);
         })
     )
 });
 
+// 缓存策略更新
 this.addEventListener('activate', function (event) {
     console.log('activate serviceWorker, event =', event);
     event.waitUntil(
-        caches.keys().then(function (keyList) {
-            return Promise.all(keyList.map(function (key) {
-                if (CACHE_NAME.indexOf(key) === -1) {
-                    console.log('key', key);
-                    return caches.delete(key);
-                }
-            }))
+        caches.keys().then((cacheNames) => {
+            console.log(cacheNames);
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    // 如果当前版本和缓存版本不一致
+                    if (cacheName.indexOf(CACHE_NAME) === -1) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            )
         })
     )
 });
-// service worker 的fetch事件
+
+// 捕获请求并返回缓存数据
 this.addEventListener('fetch', function (event) {
     console.log(event.request);
     event.respondWith(
-        caches.match(event.request).then(function (resp) {
-            if (resp) {
-                console.log(resp, event.request.url, '有缓存，从缓存中取');
+        caches.match(event.request).then((response) => {
+            if (response) {
+                console.log(event.request.url, response);
                 return resp;
             } else {
-                console.log(resp, event.request.url, '没有缓存，网络获取');
-                return fetch(event.request)
-                    .then(function (response) {
-                        return caches.open(CACHE_NAME).then(function (cache) {
-                            cache.put(event.request, response.clone());
-                            return response;
-                        })
+                console.log(event.request.url, 'no cache');
+                return fetch(event.request).then((response) => {
+                    return caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, response.clone());
+                        return response;
                     })
+                })
             }
+        }).catch(() => {
+            return fetch(event.request);
         })
     )
 });
-console.log('end');
+console.log('service worker end');
